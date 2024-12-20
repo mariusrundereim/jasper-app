@@ -1,7 +1,12 @@
+"use client";
+import { useState, useCallback } from "react";
+
+import Sidebar from "./components/sidebar";
+
 export default function Home() {
   return (
     <div>
-      <h1>Hello world!</h1>
+      <Sidebar />
     </div>
   );
 }
