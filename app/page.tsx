@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 import { Folder, Note, ViewMode } from "./types/notes";
 import Sidebar from "./components/sidebar";
+import MarkdownEditor from "./components/markdown-editor";
 
 export default function Home() {
   // View mode state
@@ -36,6 +37,23 @@ export default function Home() {
 
   // Select Note state
   const [selectedNote, setSelectedNote] = useState<Note | undefined>(undefined);
+
+  // Handle updating notes
+  const handleUpdateNote = useCallback(
+    (noteId: string, updates: Partial<Note>) => {
+      setFolders((prevFolders) =>
+        prevFolders.map((folder) => ({
+          ...folder,
+          notes: folder.notes.map((note) =>
+            note.id === noteId
+              ? { ...note, ...updates, updatedAt: new Date() }
+              : note
+          ),
+        }))
+      );
+    },
+    []
+  );
 
   // Handler functions
   const handleSelectNote = useCallback((note: Note) => {
@@ -86,7 +104,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div>
+    <div className="flex h-screen">
       <Sidebar
         folders={folders}
         selectedNote={selectedNote}
@@ -95,6 +113,20 @@ export default function Home() {
         onDeleteNote={handleDeleteNote}
         onCreateFolder={handleCreateFolder}
       />
+      <div className="flex-1 p-4">
+        {selectedNote ? (
+          <MarkdownEditor
+            note={selectedNote}
+            onUpdateNote={(updates) =>
+              handleUpdateNote(selectedNote.id, updates)
+            }
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-gray-500">
+            Select a note or create a new one to begin
+          </div>
+        )}
+      </div>
     </div>
   );
 }
