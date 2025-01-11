@@ -23,6 +23,11 @@ function MarkdownEditor({ note, onUpdateNote }: MarkdownEditorProps) {
   const [preview, setPreview] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Sync content when note changes
+  useEffect(() => {
+    setContent(note.content);
+  }, [note.content]);
+
   // Autosave
   useAutosave(content, (value) => {
     onUpdateNote({ content: value });

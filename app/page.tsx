@@ -34,6 +34,8 @@ function Home() {
           : folder
       )
     );
+
+    setSelectedNote(newNote);
   }, []);
 
   // Handler for deleting a note
@@ -65,6 +67,18 @@ function Home() {
   }, []);
 
   // Handler for updating a note
+
+  const handleUpdateFolder = useCallback(
+    (folderId: string, updates: Partial<Folder>) => {
+      setFolders((prevFolders) =>
+        prevFolders.map((folder) =>
+          folder.id === folderId ? { ...folder, ...updates } : folder
+        )
+      );
+    },
+    []
+  );
+
   const handleUpdateNote = useCallback(
     (updatedNote: Partial<Note>) => {
       if (!selectedNote) return;
@@ -88,6 +102,31 @@ function Home() {
     },
     [selectedNote]
   );
+
+  // Old
+  // const handleUpdateNote = useCallback(
+  //   (updatedNote: Partial<Note>) => {
+  //     if (!selectedNote) return;
+
+  //     const newNote = {
+  //       ...selectedNote,
+  //       ...updatedNote,
+  //       updatedAt: new Date(),
+  //     };
+
+  //     setFolders((prevFolders) =>
+  //       prevFolders.map((folder) => ({
+  //         ...folder,
+  //         notes: folder.notes.map((note) =>
+  //           note.id === selectedNote.id ? newNote : note
+  //         ),
+  //       }))
+  //     );
+
+  //     setSelectedNote(newNote);
+  //   },
+  //   [selectedNote]
+  // );
 
   return (
     <div className="flex h-screen">
