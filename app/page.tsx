@@ -1,71 +1,28 @@
 "use client";
+
 import { useState, useCallback } from "react";
-import { Folder, Note, ViewMode } from "./types/notes";
+import { Note, Folder, ViewMode } from "./types/notes";
 import Sidebar from "./components/sidebar";
 import MarkdownEditor from "./components/markdown-editor";
+import { Loader2 } from "lucide-react";
 
-export default function Home() {
-  // View mode state
+function Home() {
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | undefined>(undefined);
   const [viewMode, setViewMode] = useState<ViewMode>("preview");
 
-  // State for managing folders and selected note
-  const [folders, setFolders] = useState<Folder[]>([
-    {
-      id: "1",
-      name: "My Notes",
-      notes: [
-        {
-          id: "1",
-          title: "Welcome Note",
-          content: "Welcome to the app!",
-          folderId: "1", // Match parent folder
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
-          id: "2",
-          title: "Getting Started",
-          content: "Here's how to get started...",
-          folderId: "1", // Match parent folder
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ],
-      isExpanded: false,
-    },
-  ]);
-
-  // Select Note state
-  const [selectedNote, setSelectedNote] = useState<Note | undefined>(undefined);
-
-  // Handle updating notes
-  const handleUpdateNote = useCallback(
-    (noteId: string, updates: Partial<Note>) => {
-      setFolders((prevFolders) =>
-        prevFolders.map((folder) => ({
-          ...folder,
-          notes: folder.notes.map((note) =>
-            note.id === noteId
-              ? { ...note, ...updates, updatedAt: new Date() }
-              : note
-          ),
-        }))
-      );
-    },
-    []
-  );
-
-  // Handler functions
+  // Handler for selecting a note
   const handleSelectNote = useCallback((note: Note) => {
     setSelectedNote(note);
   }, []);
 
-  const handleCreateNote = useCallback((folderId: string) => {
+  // Handler for creating a new note
+  const createNote = useCallback((folderId: string) => {
     const newNote: Note = {
       id: Date.now().toString(),
       title: "New Note",
       content: "",
-      folderId: folderId,
+      folderId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -79,6 +36,7 @@ export default function Home() {
     );
   }, []);
 
+  // Handler for deleting a note
   const handleDeleteNote = useCallback(
     (noteId: string) => {
       setFolders((prevFolders) =>
@@ -87,6 +45,7 @@ export default function Home() {
           notes: folder.notes.filter((note) => note.id !== noteId),
         }))
       );
+
       if (selectedNote?.id === noteId) {
         setSelectedNote(undefined);
       }
@@ -94,14 +53,41 @@ export default function Home() {
     [selectedNote]
   );
 
-  const handleCreateFolder = useCallback(() => {
+  // Handler for creating a new folder
+  const createFolder = useCallback(() => {
     const newFolder: Folder = {
       id: Date.now().toString(),
       name: "New Folder",
       notes: [],
     };
-    setFolders((prev) => [...prev, newFolder]);
+
+    setFolders((prevFolders) => [...prevFolders, newFolder]);
   }, []);
+
+  // Handler for updating a note
+  const handleUpdateNote = useCallback(
+    (updatedNote: Partial<Note>) => {
+      if (!selectedNote) return;
+
+      const newNote = {
+        ...selectedNote,
+        ...updatedNote,
+        updatedAt: new Date(),
+      };
+
+      setFolders((prevFolders) =>
+        prevFolders.map((folder) => ({
+          ...folder,
+          notes: folder.notes.map((note) =>
+            note.id === selectedNote.id ? newNote : note
+          ),
+        }))
+      );
+
+      setSelectedNote(newNote);
+    },
+    [selectedNote]
+  );
 
   return (
     <div className="flex h-screen">
@@ -109,24 +95,21 @@ export default function Home() {
         folders={folders}
         selectedNote={selectedNote}
         onSelectNote={handleSelectNote}
-        onCreateNote={handleCreateNote}
+        onCreateNote={createNote}
         onDeleteNote={handleDeleteNote}
-        onCreateFolder={handleCreateFolder}
+        onCreateFolder={createFolder}
       />
-      <div className="flex-1 p-4">
+      <main className="flex-1 overflow-hidden p-4">
         {selectedNote ? (
-          <MarkdownEditor
-            note={selectedNote}
-            onUpdateNote={(updates) =>
-              handleUpdateNote(selectedNote.id, updates)
-            }
-          />
+          <MarkdownEditor note={selectedNote} onUpdateNote={handleUpdateNote} />
         ) : (
           <div className="flex h-full items-center justify-center text-gray-500">
-            Select a note or create a new one to begin
+            Select or create a note to get started
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
+
+export default Home;
