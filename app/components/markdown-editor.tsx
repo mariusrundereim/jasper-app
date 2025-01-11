@@ -32,8 +32,12 @@ function MarkdownEditor({ note, onUpdateNote }: MarkdownEditorProps) {
   }, [note.content]);
 
   // Autosave
-  useAutosave(content, (value) => {
-    onUpdateNote({ content: value });
+  useAutosave({
+    value: content,
+    onSave: (value) => {
+      onUpdateNote({ content: value });
+    },
+    delay: 1000, // Optional: you can adjust or remove this
   });
 
   // Process markdown
