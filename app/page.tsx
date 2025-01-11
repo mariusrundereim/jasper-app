@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { Note, Folder, ViewMode } from "./types/notes";
 import Sidebar from "./components/sidebar";
 import MarkdownEditor from "./components/markdown-editor";
-import { Loader2 } from "lucide-react";
 
 function Home() {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -56,13 +55,12 @@ function Home() {
   );
 
   // Handler for creating a new folder
-  const createFolder = useCallback(() => {
+  const createFolder = useCallback((name: string) => {
     const newFolder: Folder = {
       id: Date.now().toString(),
-      name: "New Folder",
+      name: name,
       notes: [],
     };
-
     setFolders((prevFolders) => [...prevFolders, newFolder]);
   }, []);
 
@@ -103,30 +101,19 @@ function Home() {
     [selectedNote]
   );
 
-  // Old
-  // const handleUpdateNote = useCallback(
-  //   (updatedNote: Partial<Note>) => {
-  //     if (!selectedNote) return;
-
-  //     const newNote = {
-  //       ...selectedNote,
-  //       ...updatedNote,
-  //       updatedAt: new Date(),
-  //     };
-
-  //     setFolders((prevFolders) =>
-  //       prevFolders.map((folder) => ({
-  //         ...folder,
-  //         notes: folder.notes.map((note) =>
-  //           note.id === selectedNote.id ? newNote : note
-  //         ),
-  //       }))
-  //     );
-
-  //     setSelectedNote(newNote);
-  //   },
-  //   [selectedNote]
-  // );
+  // Handler for deleting a folder
+  const handleDeleteFolder = useCallback(
+    (folderId: string) => {
+      setFolders((prevFolders) =>
+        prevFolders.filter((folder) => folder.id !== folderId)
+      );
+      // If the selected note was in the deleted folder, clear the selection
+      if (selectedNote?.folderId === folderId) {
+        setSelectedNote(undefined);
+      }
+    },
+    [selectedNote]
+  );
 
   return (
     <div className="flex h-screen">
@@ -137,6 +124,8 @@ function Home() {
         onCreateNote={createNote}
         onDeleteNote={handleDeleteNote}
         onCreateFolder={createFolder}
+        onUpdateFolder={handleUpdateFolder}
+        onDeleteFolder={handleDeleteFolder}
       />
       <main className="flex-1 overflow-hidden p-4">
         {selectedNote ? (
