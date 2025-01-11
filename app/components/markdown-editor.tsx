@@ -7,6 +7,9 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import rehypeStringify from "rehype-stringify";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import remarkBreaks from "remark-breaks";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Note } from "../types/notes";
@@ -40,7 +43,10 @@ function MarkdownEditor({ note, onUpdateNote }: MarkdownEditorProps) {
       const result = await unified()
         .use(remarkParse)
         .use(remarkGfm)
-        .use(remarkRehype)
+        .use(remarkBreaks)
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeRaw)
+        .use(rehypeSanitize)
         .use(rehypeStringify)
         .process(markdown);
 
